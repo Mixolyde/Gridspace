@@ -1,0 +1,6 @@
+{'*', [{outdir,"../ebin"},debug_info]}.
+{'gs_player/*', [{outdir,"../ebin"},debug_info]}.
+{'gs_player_fsm/*', [{outdir,"../ebin"},debug_info]}.
+{'gs_player_auth/*', [{outdir,"../ebin"},debug_info]}.
+{'gs_tcp/*', [{outdir,"../ebin"},debug_info]}.
+{'gs_util/*', [{outdir,"../ebin"},debug_info]}.
