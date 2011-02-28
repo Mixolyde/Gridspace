@@ -3,6 +3,13 @@ A Sci-Fi MUD written from scratch in Erlang
 
 Written by: Brian Williams (mixolyde)
 
+Features Implemented:
+Simple telnet connectivity
+In memory login creation
+
+TODO:
+Nearly everything
+
 Inspired by:
 Tradewars 2002
 Privateer
