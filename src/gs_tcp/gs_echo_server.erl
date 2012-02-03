@@ -1,7 +1,8 @@
 %%%-------------------------------------------------------------------
-%%% File    : gs_gen_listener.erl
+%%% File    : gs_echo_server.erl
 %%% Author  : Brian E. Williams <mixolyde@gmail.com>
-%%% Description : Echo Server using gen_listener_tcp
+%%% Description : Echo Server using gen_listener_tcp behavior
+%%%   echos the incoming data back out on the connection
 %%%
 %%% Created :  10 Aug 2010 by Brian E. Williams <mixolyde@gmail.com>
 %%%-------------------------------------------------------------------

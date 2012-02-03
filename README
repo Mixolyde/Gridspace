@@ -8,19 +8,42 @@ Simple telnet connectivity
 In memory login creation
 
 TODO:
+Permanent file-based data storage
+Player objects/stats
+Ship objects
+Weapon objects
+World/System/Universe design and objects
+Starbase/Planet design, objects descriptions
+Scanning and Navigating
+Movement
+Communication
+
 Nearly everything
 
 Developers:
-This is probably years from being ready to team development
+Install the latest Erlang
+Start the Erlang shell
+In the shell:
+  cd("checkout directory").
+
+This is probably years from being ready for team development
 
 Players:
 Ha!
 
 Inspired by:
+Eve (http://www.eveonline.com)
 Tradewars 2002
 Privateer
 Elite
-Eve
 Battletech MUX (http://frontiermux.com)
-Freelancer
-Pardus
+Pardus (http://www.pardus.at)
+
+Design Goals/Decisions:
+* Player can own multiple starships, but pilots one at a time
+* Player pilots in real-time using text commands for viewing surroundings and driving (google: Basic Mech Instruction)
+* Player can buy and sell cargo, fight NPC ships, fight player ships, complete missions, craft, explore, build, design ship layouts
+* Some kind of randomized instance maps for players/teams to explore
+* Single systems of planets/roids/bases connected by jump gates
+* Systems are a 2d plane for easy navigation and text display
+
