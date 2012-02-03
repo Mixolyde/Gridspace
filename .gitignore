@@ -3,3 +3,13 @@ error_logs
 
 # ignore compiled files
 ebin/*.beam
+
+# ignore temp files from vim
+*.*~
+.*~
+*.swp
+src/*.*~
+src/*.swp
+src/*/*.*~
+src/*/*.swp
+
