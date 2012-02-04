@@ -19,6 +19,8 @@
                    {nodelay,   true},
                    {packet,    raw},
                    {reuseaddr, true}]).
+%% includes
+-include("../../include/messages.hrl").
 
 %% API
 -export([start_link/0]).
@@ -74,7 +76,7 @@ handle_accept(Sock, State) ->
     {ok, FSMPid} = gs_player_fsm:start_link(),
     ClientPid = spawn(fun() -> echo_client(Sock, FSMPid) end),
     gen_tcp:controlling_process(Sock, ClientPid),
-    ClientPid ! {send, "Welcome to Gridspace!\r\nEnter Login: "},
+    ClientPid ! {send, ?WELCOME_MSG},
     {noreply, State}.
 
 handle_call(Request, _From, State) ->

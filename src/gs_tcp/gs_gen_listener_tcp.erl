@@ -1,5 +1,5 @@
 %%%-------------------------------------------------------------------
-%%% File    : gs_gen_listener.erl
+%%% File    : gs_gen_listener_tcp.erl
 %%% Author  : Brian E. Williams <mixolyde@gmail.com>
 %%% Description : Generic tcp listening behavior
 %%%
