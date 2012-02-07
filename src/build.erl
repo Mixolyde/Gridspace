@@ -5,6 +5,13 @@
 %%%
 %%% Created :  10 Aug 2010 by Brian E. Williams <mixolyde@gmail.com>
 %%%-------------------------------------------------------------------
+
+%% cd ("C:/Users/bwilliams/Dropbox/dev/erl/gridspace/ebin").
+%% build:all().
+%% gs_super:start_link([]).
+
+
+
 -module(build).
 -author("mixolyde@gmail.com").
 
@@ -19,4 +26,3 @@ all() ->
     make:all([load]),
     file:set_cwd(Dir).
 
-change() -> oktest2.

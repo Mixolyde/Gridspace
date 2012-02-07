@@ -1,6 +1,9 @@
 {'*', [{outdir,"../ebin"},debug_info]}.
+{'gs_db/*', [{outdir,"../ebin"},debug_info]}.
+{'gs_fsm/*', [{outdir,"../ebin"},debug_info]}.
+{'gs_infra/*', [{outdir,"../ebin"},debug_info]}.
 {'gs_player/*', [{outdir,"../ebin"},debug_info]}.
-{'gs_player_fsm/*', [{outdir,"../ebin"},debug_info]}.
-{'gs_player_auth/*', [{outdir,"../ebin"},debug_info]}.
+{'gs_ship/*', [{outdir,"../ebin"},debug_info]}.
+{'gs_space/*', [{outdir,"../ebin"},debug_info]}.
 {'gs_tcp/*', [{outdir,"../ebin"},debug_info]}.
 {'gs_util/*', [{outdir,"../ebin"},debug_info]}.

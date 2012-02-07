@@ -73,11 +73,17 @@ init([]) ->
     {ok, {?TCP_PORT, ?TCP_OPTS}, nil}.
 
 handle_accept(Sock, State) ->
-    {ok, FSMPid} = gs_player_fsm:start_link(),
-    ClientPid = spawn(fun() -> echo_client(Sock, FSMPid) end),
-    gen_tcp:controlling_process(Sock, ClientPid),
-    ClientPid ! {send, ?WELCOME_MSG},
-    {noreply, State}.
+  % Create the login finite state machine
+  {ok, FSMPid} = gs_player_fsm:start_link(),
+  % Create the specific echo_client function which handles the
+  %   communication
+  ClientPid = spawn(fun() -> echo_client(Sock, FSMPid) end),
+  % Change the controlling process of the socket, to avoid crashing
+  %   the tcp server
+  gen_tcp:controlling_process(Sock, ClientPid),
+  % Send the game's welcome message to the client to get them started
+  ClientPid ! {send, ?WELCOME_MSG},
+  {noreply, State}.
 
 handle_call(Request, _From, State) ->
     {reply, {illegal_request, Request}, State}.

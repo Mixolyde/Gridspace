@@ -10,7 +10,7 @@
 -author("mixolyde@gmail.com").
 -behaviour(supervisor). % see erl -man supervisor
 
--export([start/0, start_in_shell_for_testing/0, start_link/1, init/1]).
+-export([start/0, start_link/1, init/1]).
 
 -define(MAX_RESTART,    5).
 -define(MAX_TIME,      60).
@@ -18,12 +18,9 @@
 
 start() ->
     spawn(fun() ->
-        supervisor:start_link({local,?MODULE}, ?MODULE, _Arg = [])
+      {ok, Pid} = supervisor:start_link({local,?MODULE}, ?MODULE, _Arg = []),
+      io:format("Starting gridspace supervisor in unlinked mode with Pid: ~p~n", [Pid])
     end).
-
-start_in_shell_for_testing() ->
-    {ok, Pid} = supervisor:start_link({local,?MODULE}, ?MODULE, _Arg = []),
-    unlink(Pid).
 
 start_link(Args) ->
     supervisor:start_link({local,?MODULE}, ?MODULE, Args).
@@ -39,13 +36,13 @@ init([]) ->
             10000,
             worker,
             [gs_player_auth]},
-            % tcp listener
-            {gs_echo_server,
-            {gs_echo_server, start_link, []},
+            % telnet listener
+            {gs_telnet_server,
+            {gs_telnet_server, start_link, []},
             permanent,
             10000,
             worker,
-            [gs_echo_server]}
+            [gs_telnet_server]}
 
        ]
     }}.
