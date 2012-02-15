@@ -30,4 +30,6 @@ start(_Type, StartArgs) ->
 %% should do any necessary cleaning up. The return value is ignored.
 %%--------------------------------------------------------------------
 stop(_State) ->
-    ok.
+  error_logger:info_msg("Called stop at gs_app level~n", []),
+  gs_super:stop(),
+  ok.

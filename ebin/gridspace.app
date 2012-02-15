@@ -8,16 +8,16 @@
 %% This is the application resource file (.app file) for the 'base'
 %% application.
 {application, gridspace,
-       [{description,  "A sci-fi mud written in Erlang" },
-	{vsn,           "1.0" },
-	{modules,       [gs_app, gs_super, 
-    gs_player_auth, 
-    gs_telnet_server, gs_telnet_client, gs_gen_listener_tcp, 
-    gs_login_fsm,
-		map_util, cellular_map_gen]},
-	{registered,    [gs_super, gs_player_auth, gs_telnet_server]},
-	{applications,  [kernel,stdlib]},
-	{mod,           {gs_app,[]}},
-	{start_phases,  []}
-       ]
+  [{description,  "A sci-fi mud written in Erlang" },
+	  {vsn,           "1.0" },
+	  {modules,       [gs_app, gs_super, 
+      gs_player_db, 
+      gs_telnet_server, gs_telnet_client, gs_gen_listener_tcp, 
+      gs_login_fsm,
+  		map_util, cellular_map_gen]},
+  	{registered,    [gs_super, gs_player_db, gs_telnet_server]},
+  	{applications,  [kernel,stdlib]},
+  	{mod,           {gs_app,[]}},
+  	{start_phases,  []}
+  ]
 }.

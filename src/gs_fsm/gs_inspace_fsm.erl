@@ -1,27 +1,24 @@
 %%%-------------------------------------------------------------------
-%%% File    : gs_login_fsm.erl
+%%% File    : gs_inspace_fsm.erl
 %%% Author  : Brian E. Williams <mixolyde@gmail.com>
-%%% Description : Initial login state machine, should hand off to in_game
-%%%  state machine on successful login
+%%% Description : State machine controlling user connection when in space
 %%%
 %%% Created :  17 Aug 2010 by Brian E. Williams <mixolyde@gmail.com>
 %%%-------------------------------------------------------------------
 
-%% States : welcome, enter_pass, create_new, create_new_password, authenticating, docked, quitting
+%% States : inspace
 
-
--module(gs_login_fsm).
+-module(gs_inspace_fsm).
 
 -behaviour(gen_fsm).
 
 -include("../../include/messages.hrl").
--include("../../include/player.hrl").
 
 %% API
 -export([start_link/0]).
 
 %% states
--export([welcome/2, enter_pass/2, create_new_yorn/2, create_new_pass/2, confirm_new_pass/2, docked/2, inspace/2]).
+-export([welcome/2]).
 
 %% gen_fsm callbacks
 -export([init/1, state_name/3, handle_event/3,
@@ -41,8 +38,8 @@
 
 
 start_link() ->
-  % do not register with a global name, as there will be an FSM for each
-  % logged in player
+    % do not register with a global name, as there will be an FSM for each
+    % logged in player
   gen_fsm:start_link(?MODULE, [], []).
 
 %%====================================================================
@@ -58,7 +55,7 @@ start_link() ->
 %% initialize.
 %%--------------------------------------------------------------------
 init([]) ->
-  error_logger:info_msg("Created login fsm~n", []),
+  error_logger:info_msg("Created inspace fsm~n", []),
 
   {ok, welcome, []}.
 
@@ -82,7 +79,6 @@ welcome({SocketPid, data, InData}, State) when length(InData) > 3 ->
             SocketPid ! {send, "Password: "},
             {next_state, enter_pass, [{player, Data}]};
         {no_player, Data} ->
-          % TODO check for reserved words
             SocketPid ! {send, "That player name does not exist!\r\nCreate a new player (y or n): "},
             {next_state, create_new_yorn, [{player, Data}]}
     end;
@@ -100,7 +96,7 @@ enter_pass({SocketPid, data, Data}, State = [{player, PlayerName}]) ->
     case gs_player_db:authenticate(PlayerName, Data) of
         {authenticated, PlayerName} ->
             SocketPid ! {send, "Password accepted!\r\nYou have entered the Gridspace Universe!\r\n"},
-            {next_state, docked, [{player, PlayerName}]};
+            {next_state, playing, [{player, PlayerName}]};
         {bad_password, PlayerName} ->
             SocketPid ! {send, "Invalid password.\r\n"},
             SocketPid ! {send, ?WELCOME_MSG},
@@ -139,9 +135,8 @@ confirm_new_pass({SocketPid, data, Data}, State = [{player, PlayerName}, {passwo
     case Data of
         Password ->
             SocketPid ! {send, io_lib:format("Password confirmed. Welcome to Gridspace, ~s!~n", [PlayerName])},
-            % TODO retrieve player record from DB and use that as the state
             gs_player:add_player(PlayerName, Password),
-            {next_state, docked, [{player, PlayerName}]};
+            {next_state, playing, [{player, PlayerName}]};
         _Else ->
             SocketPid ! {send, "Passwords don't match, player not created.\r\n"},
             SocketPid ! {send, ?WELCOME_MSG},
@@ -151,21 +146,14 @@ confirm_new_pass(_Event, State) ->
     error_logger:info_msg("Received event ~p in confirm_new_pass state for FSM State: ~p~n", [_Event, State]),
     {next_state, confirm_new_pass, State}.
 
-docked({SocketPid, data, Data}, State = [{player, PlayerName}]) ->
-    error_logger:info_msg("Received event ~p in docked state for FSM State: ~s~n", [Data, State]),
-    SocketPid ! {send, io_lib:format("~s Currently Docked> Command echo: ~s~n", [PlayerName, Data])},
-    {next_state, docked, State};
-docked(_Event, State) ->
-    error_logger:info_msg("Received event ~p in docked state for FSM State: ~p~n", [_Event, State]),
-    {next_state, docked, State}.
+playing({SocketPid, data, Data}, State = [{player, PlayerName}]) ->
+    error_logger:info_msg("Received event ~p in playing state for FSM State: ~s~n", [Data, State]),
+    SocketPid ! {send, io_lib:format("~s> Command echo: ~s~n", [PlayerName, Data])},
+    {next_state, playing, State};
+playing(_Event, State) ->
+    error_logger:info_msg("Received event ~p in playing state for FSM State: ~p~n", [_Event, State]),
+    {next_state, playing, State}.
 
-inspace({SocketPid, data, Data}, State = [{player, PlayerName}]) ->
-    error_logger:info_msg("Received event ~p in inspace state for FSM State: ~s~n", [Data, State]),
-    SocketPid ! {send, io_lib:format("~s Currently In Space> Command echo: ~s~n", [PlayerName, Data])},
-    {next_state, inspace, State};
-inspace(_Event, State) ->
-    error_logger:info_msg("Received event ~p in inspace state for FSM State: ~p~n", [_Event, State]),
-    {next_state, inspace, State}.
 
 %%--------------------------------------------------------------------
 %% Function:

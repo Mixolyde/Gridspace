@@ -17,14 +17,26 @@ Starbase/Planet design, objects descriptions
 Scanning and Navigating
 Movement
 Communication
+Combat
+NPCs
+Missions
+Player Economy
+Mining
+Team-based play
 
 Nearly everything
 
 Developers:
-Install the latest Erlang
-Start the Erlang shell
-In the shell:
-  cd("checkout directory").
+* Install the latest Erlang
+* Start the Erlang shell
+* In the shell:
+  * cd("checkout directory/src").
+  * c(build).
+  * build:all().
+  * cd("../ebin").
+  * application:start(gs_app).
+  * application:stop(gs_app).
+  
 
 This is probably years from being ready for team development
 
@@ -32,7 +44,7 @@ Players:
 Ha!
 
 Inspired by:
-Eve (http://www.eveonline.com)
+EVE Online (http://www.eveonline.com)
 Tradewars 2002
 Privateer
 Elite
@@ -42,8 +54,12 @@ Pardus (http://www.pardus.at)
 Design Goals/Decisions:
 * Player can own multiple starships, but pilots one at a time
 * Player pilots in real-time using text commands for viewing surroundings and driving (google: Basic Mech Instruction)
-* Player can buy and sell cargo, fight NPC ships, fight player ships, complete missions, craft, explore, build, design ship layouts
+* Player can buy and sell cargo, fight NPC ships, fight player ships, complete missions, craft, explore, build, design ship fittings
 * Some kind of randomized instance maps for players/teams to explore
 * Single systems of planets/roids/bases connected by jump gates
 * Systems are a 2d plane for easy navigation and text display
+* Long and short range scanning/probing
+* Electronic Warfare
+* Player skills affecting combat rolls
+* Fleet/Squad play
 

@@ -10,7 +10,7 @@
 -author("mixolyde@gmail.com").
 -behaviour(supervisor). % see erl -man supervisor
 
--export([start/0, start_link/1, init/1]).
+-export([start/0, start_link/1, init/1, stop/0]).
 
 -define(MAX_RESTART,    5).
 -define(MAX_TIME,      60).
@@ -19,30 +19,36 @@
 start() ->
     spawn(fun() ->
       {ok, Pid} = supervisor:start_link({local,?MODULE}, ?MODULE, _Arg = []),
-      io:format("Starting gridspace supervisor in unlinked mode with Pid: ~p~n", [Pid])
+      error_logger:info_msg("Starting gridspace supervisor in unlinked mode with Pid: ~p~n", [Pid])
     end).
 
 start_link(Args) ->
-    supervisor:start_link({local,?MODULE}, ?MODULE, Args).
+  {ok, Pid} = supervisor:start_link({local,?MODULE}, ?MODULE, Args),
+  error_logger:info_msg("Starting gridspace supervisor in linked mode with Pid: ~p~n", [Pid]),
+  {ok, Pid}.
 
 init([]) ->
     {ok, {
         {one_for_one, ?MAX_RESTART, ?MAX_TIME}, % super options
         [
             % player authentication server
-            {gs_player_auth,
-            {gs_player_auth, start_link, []},
+            {gs_player_db,
+            {gs_player_db, start_link, []},
             permanent,
             10000,
             worker,
-            [gs_player_auth]},
+            [gs_player_db]},
             % telnet listener
             {gs_telnet_server,
             {gs_telnet_server, start_link, []},
             permanent,
             10000,
             worker,
-            [gs_telnet_server]}
+            [gs_telnet_server, gs_telnet_client]}
 
        ]
     }}.
+
+stop() ->
+  error_logger:info_msg("Shutting down gridspace servers from stop call in main supervisor.~n", []),
+  gs_player_db:stop().
