@@ -14,7 +14,7 @@
       gs_player_db, 
       gs_telnet_server, gs_telnet_client, gs_gen_listener_tcp, 
       gs_login_fsm,
-  		map_util, cellular_map_gen]},
+      gs_command_parser, gs_command_executor, gs_prompt]},
   	{registered,    [gs_super, gs_player_db, gs_telnet_server]},
   	{applications,  [kernel,stdlib]},
   	{mod,           {gs_app,[]}},

@@ -6,5 +6,5 @@
 %%% Created :  03 Feb 2012 by Brian E. Williams <mixolyde@gmail.com>
 %%%-------------------------------------------------------------------
 
--record(player, {pname, password, displayname, flags, settings}).
+-record(player, {pname, password, displayname, flags = [], settings = []}).
 

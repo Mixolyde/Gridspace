@@ -10,11 +10,15 @@
 
 -behaviour(gen_server).
 
-%% Authentication Record
--record(player, {pname, password}).
+%% records includes
+-include("../../include/player.hrl").
 
-%% API
--export([start_link/0, stop/0, authenticate/2, player_exists/1, add_player/2, remove_player/2, change_password/3]).
+%% Server API
+-export([start_link/0, stop/0]).
+
+%% DB API
+-export([authenticate/2, player_exists/1, add_player/2, 
+    remove_player/2, change_password/3, retrieve_player/1]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -39,6 +43,7 @@ player_exists(Name)                             -> gen_server:call(?MODULE, {pla
 add_player(Name, Password)                      -> gen_server:call(?MODULE, {add_player, Name, Password}).
 remove_player(Name, Password)                   -> gen_server:call(?MODULE, {remove_player, Name, Password}).
 change_password(Name, OldPassword, NewPassword) -> gen_server:call(?MODULE, {change_password, Name, OldPassword, NewPassword}).
+retrieve_player(Name)                           -> gen_server:call(?MODULE, {retrieve_player, Name}).
 
 %%====================================================================
 %% gen_server callbacks
@@ -55,11 +60,11 @@ init([]) ->
     % set the key position to 2 to account for record syntax {player, name, pass, ...}
     Tab = ets:new(?MODULE,[{keypos,2}]),
     TestPlayers = [
-      {"admin", "testadmin"},
-      {"mixol", "testmix"},
-      {"bravo", "testbravo"}],
-    lists:map(fun ({Name, Pass}) ->
-          Login = #player{pname = Name, password = Pass},
+      {"admin", "testadmin", "Gridwiz", [wizard]},
+      {"mixol", "testmix", "Mixolyde", []},
+      {"bravo", "testbravo", "Bravo Walker", []}],
+    lists:map(fun ({Name, Pass, Display, Flags}) ->
+          Login = #player{pname = Name, password = Pass, displayname = Display, flags = Flags},
           io:format("Inserting default player into table: ~p~n", [Login]),
           ets:insert(Tab, Login) end, 
       TestPlayers),
@@ -76,35 +81,39 @@ init([]) ->
 %% Description: Handling call messages
 %%--------------------------------------------------------------------
 handle_call({authenticate, Name, Password}, _From, Tab) ->
-    Player = #player{pname = Name, password = Password},
     Reply = case ets:lookup(Tab, Name) of
         [] -> {no_player, Name};
-        [Player] ->
-            {authenticated, Name};
+        [Player = #player{password = Password}] ->
+            {authenticated, Name, Player};
         [#player{pname = Name}] ->
             {bad_password, Name}
     end,
     {reply, Reply, Tab};
-handle_call({player_exists, Name}, _From, Tab) ->
+handle_call({retrieve_player, Name}, _From, Tab) ->
     Reply = case ets:lookup(Tab, Name) of
         [] -> {no_player, Name};
-        [#player{pname = Name}] ->
-            {exists, Name}
+        [Player] ->
+          {player, Player}
+    end,
+    {reply, Reply, Tab};
+handle_call({player_exists, Name}, _From, Tab) ->
+    Reply = case ets:member(Tab, Name) of
+        true -> {exists, Name};
+        _    -> {no_player, Name}
     end,
     {reply, Reply, Tab};
 handle_call({add_player, Name, Password}, _From, Tab) ->
-    Reply = case ets:lookup(Tab, Name) of
-        [] -> ets:insert(Tab, #player{pname = Name, password = Password}),
-            {welcome, Name};
-        [_] ->
-            {already_a_player, Name}
+    Reply = case ets:member(Tab, Name) of
+        true ->
+            {already_a_player, Name};
+        _ -> ets:insert(Tab, #player{pname = Name, password = Password}),
+            {welcome, Name}
     end,
     {reply, Reply, Tab};
 handle_call({remove_player, Name, Password}, _From, Tab) ->
-    Player = #player{pname = Name, password = Password},
     Reply = case ets:lookup(Tab, Name) of
         [] -> {not_a_player, Name};
-    [Player] ->
+    [#player{password = Password}] ->
         io:format("Passwords match, removing player: ~p~n", [Name]),
         ets:delete(Tab, Name),
         {player_removed, Name};

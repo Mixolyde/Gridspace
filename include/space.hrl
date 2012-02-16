@@ -7,9 +7,10 @@
 %%% Created :  03 Feb 2012 by Brian E. Williams <mixolyde@gmail.com>
 %%%-------------------------------------------------------------------
 
--record(planet, {pname, system = #system{}, xloc, yloc} ).
+-record(planet, {pname, system_name, xloc, yloc} ).
 
--record(station, {sname, system = #system{}, xloc, yloc} ).
+-record(station, {sname, system_name, xloc, yloc} ).
 
--record(system, {sname, stations, planets, moons, belts} ).
+-record(system, {sname, stations = [], planets = [], 
+    moons = [], belts = []} ).
 

@@ -50,5 +50,7 @@ init([]) ->
     }}.
 
 stop() ->
-  error_logger:info_msg("Shutting down gridspace servers from stop call in main supervisor.~n", []),
-  gs_player_db:stop().
+  error_logger:info_msg("Shutting down gridspace from stop call in main supervisor.~n", []),
+  gs_player_db:stop(),
+  gs_telnet_server:stop(),
+  error_logger:info_msg("Completed shutdown of gridspace supervised servers.~n", []).

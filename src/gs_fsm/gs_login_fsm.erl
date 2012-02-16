@@ -98,9 +98,9 @@ welcome(_Event, State) ->
 enter_pass({SocketPid, data, Data}, State = [{player, PlayerName}]) ->
     error_logger:info_msg("Received data event ~p in enter_pass state for FSM State: ~p~n", [Data, State]),
     case gs_player_db:authenticate(PlayerName, Data) of
-        {authenticated, PlayerName} ->
+        {authenticated, PlayerName, Player} ->
             SocketPid ! {send, "Password accepted!\r\nYou have entered the Gridspace Universe!\r\n"},
-            {next_state, docked, [{player, PlayerName}]};
+            {next_state, docked, [{player, Player}]};
         {bad_password, PlayerName} ->
             SocketPid ! {send, "Invalid password.\r\n"},
             SocketPid ! {send, ?WELCOME_MSG},
@@ -140,8 +140,9 @@ confirm_new_pass({SocketPid, data, Data}, State = [{player, PlayerName}, {passwo
         Password ->
             SocketPid ! {send, io_lib:format("Password confirmed. Welcome to Gridspace, ~s!~n", [PlayerName])},
             % TODO retrieve player record from DB and use that as the state
-            gs_player:add_player(PlayerName, Password),
-            {next_state, docked, [{player, PlayerName}]};
+            gs_player_db:add_player(PlayerName, Password),
+            {player, Player} = gs_player_db:retrieve_player(PlayerName),
+            {next_state, docked, [{player, Player}]};
         _Else ->
             SocketPid ! {send, "Passwords don't match, player not created.\r\n"},
             SocketPid ! {send, ?WELCOME_MSG},
@@ -151,20 +152,25 @@ confirm_new_pass(_Event, State) ->
     error_logger:info_msg("Received event ~p in confirm_new_pass state for FSM State: ~p~n", [_Event, State]),
     {next_state, confirm_new_pass, State}.
 
-docked({SocketPid, data, Data}, State = [{player, PlayerName}]) ->
-    error_logger:info_msg("Received event ~p in docked state for FSM State: ~s~n", [Data, State]),
-    SocketPid ! {send, io_lib:format("~s Currently Docked> Command echo: ~s~n", [PlayerName, Data])},
+docked({SocketPid, data, Data}, State = [{player, Player}]) ->
+    error_logger:info_msg("Received event ~p in docked state for FSM State: ~p~n", [Data, State]),
+    Command = gs_command_parser:parse_command(docked, Data, Player),
+    _Executed = gs_command_executor:execute_command(Command, Player),
+    Prompt = gs_prompt:get_prompt(docked, Player),
+    1=0,
+    SocketPid ! {send, io_lib:format("Command echo: ~p~n", [Command])},
+    SocketPid ! {send, Prompt},
     {next_state, docked, State};
 docked(_Event, State) ->
-    error_logger:info_msg("Received event ~p in docked state for FSM State: ~p~n", [_Event, State]),
+    error_logger:error_msg("Received non-standard event ~p in docked state for FSM State: ~p~n", [_Event, State]),
     {next_state, docked, State}.
 
-inspace({SocketPid, data, Data}, State = [{player, PlayerName}]) ->
-    error_logger:info_msg("Received event ~p in inspace state for FSM State: ~s~n", [Data, State]),
-    SocketPid ! {send, io_lib:format("~s Currently In Space> Command echo: ~s~n", [PlayerName, Data])},
+inspace({SocketPid, data, Data}, State = [{player, Player}]) ->
+    error_logger:info_msg("Received event ~p in inspace state for FSM State: ~p~n", [Data, State]),
+    SocketPid ! {send, io_lib:format("~s Currently In Space> Command echo: ~p~n", [Player, Data])},
     {next_state, inspace, State};
 inspace(_Event, State) ->
-    error_logger:info_msg("Received event ~p in inspace state for FSM State: ~p~n", [_Event, State]),
+    error_logger:error_msg("Received non-standard event ~p in inspace state for FSM State: ~p~n", [_Event, State]),
     {next_state, inspace, State}.
 
 %%--------------------------------------------------------------------
@@ -199,7 +205,7 @@ state_name(_Event, _From, State) ->
 %%--------------------------------------------------------------------
 handle_event({quit, Reason}, StateName, State) ->
     io:format("Player FSM received quit message: ~p while in State: ~p~n", [Reason, StateName]),
-  {stop, Reason, State};
+  {stop, normal, State};
 handle_event(_Event, StateName, State) ->
   {next_state, StateName, State}.
 
@@ -242,7 +248,8 @@ handle_info(_Info, StateName, State) ->
 %% necessary cleaning up. When it returns, the gen_fsm terminates with
 %% Reason. The return value is ignored.
 %%--------------------------------------------------------------------
-terminate(_Reason, _StateName, _State) ->
+terminate(Reason, StateName, _State) ->
+  error_logger:info_msg("Login FSM terminating while in state: ~p for reason: ~p~n", [StateName, Reason]),
   ok.
 
 %%--------------------------------------------------------------------

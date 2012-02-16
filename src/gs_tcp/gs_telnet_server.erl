@@ -20,11 +20,14 @@
                    {nodelay,   true},
                    {packet,    raw},
                    {reuseaddr, true}]).
+
+-record(state, {connections = []}).
+
 %% includes
 -include("../../include/messages.hrl").
 
 %% API
--export([start_link/0]).
+-export([start_link/0, stop/0, info/0]).
 
 %% gen_listener_tcp callbacks
 -export([init/1,
@@ -39,11 +42,15 @@
 start_link() ->
     gs_gen_listener_tcp:start_link({local, ?MODULE}, ?MODULE, [], []).
 
+stop() -> gs_gen_listener_tcp:call(?MODULE, stop).
+
+info() -> gs_gen_listener_tcp:call(?MODULE, info).
+
 init([]) ->
-    {ok, {?TCP_PORT, ?TCP_OPTS}, nil}.
+  {ok, {?TCP_PORT, ?TCP_OPTS}, #state{connections = []}}.
 
 handle_accept(Sock, State) ->
-  % Create the login finite state machine
+  % Create the login finite state machine and link to it
   {ok, FSMPid} = gs_login_fsm:start_link(),
   % Create the specific echo_client function which handles the
   %   communication
@@ -53,19 +60,33 @@ handle_accept(Sock, State) ->
   gen_tcp:controlling_process(Sock, ClientPid),
   % Send the game's welcome message to the client to get them started
   ClientPid ! {send, ?WELCOME_MSG},
-  {noreply, State}.
+  % add a connection record to the list of connections being monitored by this server
+  {noreply, #state{connections = [{Sock, ClientPid} | State#state.connections]}}.
 
+
+
+handle_call(info, From, State = #state{connections = Conns}) ->
+    error_logger:info_msg("~p received info from: ~p with state ~p~n", [?MODULE, From, State]),
+    Reply = {telnet_server_info, 
+      [{count, length(Conns)}]},
+    {reply, Reply, State};
+handle_call(stop, From, State) ->
+    error_logger:info_msg("~p received stop from: ~p~n", [?MODULE, From]),
+    {stop, normal, stopped, State};
 handle_call(Request, _From, State) ->
-    {reply, {illegal_request, Request}, State}.
+  error_logger:info_msg("Telnet Server received unexpected call: ~p~n", [Request]),
+  {reply, {illegal_request, Request}, State}.
 
 handle_cast(_Request, State) ->
-    {noreply, State}.
+  error_logger:info_msg("Telnet Server received unexpected cast: ~p~n", [_Request]),
+  {noreply, State}.
 
 handle_info(_Info, State) ->
     {noreply, State}.
 
 terminate(_Reason, _State) ->
-    ok.
+  error_logger:info_msg("Shutting down Telnet Server~n", []),
+  ok.
 
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.

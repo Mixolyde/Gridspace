@@ -11,6 +11,12 @@
 -author("Brian E. Williams").
 -compile([debug_info, export_all]).
 
-parse_command(_InData) ->
-  {command, cname, [args]}.
+-include("../../include/player.hrl").
 
+parse_command(docked, InData, #player{pname = PlayerName}) ->
+  error_logger:info_msg("Parsing command: ~s send by player: ~p while docked.~n", [InData, PlayerName]),
+  {command, cname, [args]};
+
+parse_command(inspace, InData, #player{pname = PlayerName}) ->
+  error_logger:info_msg("Parsing command: ~s send by player: ~p while in space.~n", [InData, PlayerName]),
+  {command, cname, [args]}.

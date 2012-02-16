@@ -11,6 +11,6 @@
 -author("Brian E. Williams").
 -compile([debug_info, export_all]).
 
-execute_command({command, Cname, Args}) ->
-  error_logger:info_msg("Executing command: ~p with args: ~p~n", [Cname, Args]),
-  {ok}.
+execute_command({command, Cname, Args}, Player) ->
+  error_logger:info_msg("Executing command: ~p with args: ~p from player: ~p~n", [Cname, Args, Player]),
+  ok.
